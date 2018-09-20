@@ -1,0 +1,45 @@
+import nltk
+from nltk.corpus import brown
+from nltk.book import *
+from nltk.corpus import wordnet as wn
+from nltk import word_tokenize
+
+
+# returns an array of synonyms
+def findSynonyms(word):
+    synsetOfWord = wn.synsets(word)
+    synonymsList = []
+    for word in synsetOfWord:
+       # print(word)
+        word = word.name()
+        word = word[:word.index(".")]
+        synonymsList.append(word)
+        #print(word)
+    return synonymsList
+
+    
+    
+
+# this loop runs through every word in tokens 
+# and prints out various facts about each word, as
+# long as that word has a viable synset
+
+
+def wordReport(tokenizedText, chosenWord):
+    wordToCompare = wn.synsets(chosenWord)
+    wordToCompare = wordToCompare[0]
+    for w in tokenizedText:
+        ourWord = wn.synsets(w)
+        if(len(ourWord) != 0):
+            ourWord = ourWord[0]
+            print("word: " + w)
+            print( str(ourWord.min_depth()) )
+            print(str(ourWord.path_similarity(wordToCompare)))
+            print(findSynonyms(w))
+
+
+#userString = input("Enter a string: ")
+
+userString = "Frankly, my dead, I don't give a damn."
+
+wordReport(userString, "father")
