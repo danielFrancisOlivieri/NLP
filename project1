@@ -32,7 +32,9 @@ def wordReport(tokenizedText, chosenWord):
         ourWord = wn.synsets(w)
         if(len(ourWord) != 0):
             ourWord = ourWord[0]
-            print("word: " + w)
+            definition = ourWord.definition()
+            print("word report for " + w)
+            print("definition: " + definition)            
             print( str(ourWord.min_depth()) )
             print(str(ourWord.path_similarity(wordToCompare)))
             print(findSynonyms(w))
@@ -41,5 +43,5 @@ def wordReport(tokenizedText, chosenWord):
 #userString = input("Enter a string: ")
 
 userString = "Frankly, my dead, I don't give a damn."
-
+userString = word_tokenize(userString)
 wordReport(userString, "father")
