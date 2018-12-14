@@ -1,0 +1,99 @@
+# WIKIPEDIA NGRAM FINDER
+# DANIEL OLIVIERI
+# 13 DECEMBER 2018 
+# This program crawls semi-randomly (using the time as a seed number)
+# through wikipedia pages in order to fill a dictionary with the most common
+# ngrams across all pages it has traversed
+
+from urllib.request import urlopen
+from bs4 import BeautifulSoup 
+import datetime
+import random
+import re
+
+# for ordering the dictionary
+from collections import OrderedDict
+
+# import nltk libraries
+import nltk
+from nltk import ngrams
+from collections import Counter
+
+random.seed(datetime.datetime.now()) # produces a random seed 
+
+
+# precon: internet connection 
+# postcon: returns a bs object of all links in the bodyContent div of the wiki page
+def getLinks(articleUrl):
+    html = urlopen('http://en.wikipedia.org{}'.format(articleUrl)) # opens whichever wikipedia page you hand it
+    bs = BeautifulSoup(html, 'html.parser') # parses that document into a bs object
+    # first function finds the main body div, 
+    # second uses a regex to find all appropriate links 
+    return bs.find('div', {'id': 'bodyContent'}).find_all('a', href=re.compile('^(/wiki/)((?!:).)*$')) 
+
+# precon: internet connection
+# postcon: returns text of all paragraphs of the article including photo captions
+def getArticleText(articleUrl):
+    html = urlopen('http://en.wikipedia.org{}'.format(articleUrl)) # opens whichever wikipedia page you hand it
+    bs = BeautifulSoup(html, 'html.parser') # parses that document into a bs object
+    paragraphsList = []
+    paragraphsList = bs.body.find_all('p') # finds all bold tags
+    pargraphsText = ''
+    # prints full list 
+    for i in paragraphsList:
+        pargraphsText += i.get_text()
+    return(pargraphsText)
+
+
+# this dictionary stores all ngrams found 
+# the gram is the key, the number of instances is the value
+ngramDictionary = {}
+
+# precon: have the text for the article 
+# postcon: adds all found ngrams to the dictionary
+# parameters: text holds the text to be processed
+# sizeOfGram is the length of the ngram you search for
+def findGrams(text, sizeOfGram):
+    # splits the text up into grams of the size chosen
+    allGrams = ngrams(text.split(), sizeOfGram)
+
+    # goes through generator of allGrams and adds them to the dictionary
+    for gram in allGrams:
+        if (gram in ngramDictionary):
+            ngramDictionary[gram] += 1
+        else:
+            ngramDictionary[gram] = 1
+
+def printMostCommonGrams():
+    descendingOrder = sorted(ngramDictionary, key=ngramDictionary.get, reverse=True)
+    for r in descendingOrder:
+        if(ngramDictionary[r] > 1):
+            print (r, ngramDictionary[r])
+
+
+kevinText = getArticleText('/wiki/Kevin_Bacon')
+
+
+# this is the end of the url for our actor
+links = getLinks('/wiki/Kevin_Bacon')
+
+count = 0
+
+# value of n for ngrams detection
+# ie, a value of 2 would have it look for bigrams
+# and a value of three would have it look for trigrams
+# etc
+n = 4
+
+while len(links) > 0:
+    newArticle = links[random.randint(0, len(links) -1)].attrs['href']
+    print('****************'+ str(count) +'***************')
+    # print(newArticle)
+    allParagraphs = getArticleText(newArticle)
+    findGrams(allParagraphs, n)
+    links = getLinks(newArticle)
+    count+= 1
+    if count > 30:
+        break
+
+printMostCommonGrams()
